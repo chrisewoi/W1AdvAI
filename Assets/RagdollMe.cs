@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public struct JointData
 {
@@ -12,11 +13,9 @@ public struct JointData
     }
 }
 
-
-
 public class RagdollMe : MonoBehaviour
 {
-    Animator animator;
+    public Animator animator;
     JointData[] jointData;
 
     void Start()
@@ -28,18 +27,21 @@ public class RagdollMe : MonoBehaviour
         SetChildColliders(false);
     }
 
-    private void Update()
+    void Update()
     {
         float scoreTotal = 0f;
         for (int i = 0; i < jointData.Length; i++)
         {
             var joint = jointData[i];
-            float newScore = Mathf.Abs(joint.previousForce - joint.joint.currentForce.magnitude);
+            float newScore = Mathf.Abs(joint.previousForce
+                - joint.joint.currentForce.magnitude);
 
+            //print(newScore);
             scoreTotal += newScore;
 
             joint.previousForce = joint.joint.currentForce.magnitude;
         }
+        //print(scoreTotal);
     }
 
     void GetAllJoints()
@@ -56,7 +58,7 @@ public class RagdollMe : MonoBehaviour
 
     void AddChildRagdoll()
     {
-        foreach (var rb in GetComponentsInChildren<Rigidbody>())
+        foreach(var rb in GetComponentsInChildren<Rigidbody>())
         {
             rb.gameObject.AddComponent<ChildRagdoll>();
             if (rb.gameObject != gameObject)
@@ -65,42 +67,47 @@ public class RagdollMe : MonoBehaviour
             }
         }
     }
+
     void SetChildColliders(bool enabled)
     {
         Collider currentCol = GetComponent<Collider>();
         foreach (var col in GetComponentsInChildren<Collider>())
         {
-            if (col == currentCol)
+            if(col == currentCol)
             {
                 currentCol.enabled = !enabled;
-            }
-            else
+            } else
             {
                 col.enabled = enabled;
             }
         }
     }
+
     public void Ragdoll(Vector3 impact)
     {
-        if (impact.magnitude < 7.5f) return;
+        //Debug.Log(impact.magnitude);
+        if (impact.magnitude < 10f) return;
         SetChildColliders(true);
-        ResetVelocities(impact);
         animator.enabled = false;
-        enabled = false;
     }
-    void ResetVelocities(Vector3 impact)
+
+    void ResetVelocities(Vector3 impulse)
     {
         var rbs = GetComponentsInChildren<Rigidbody>();
         foreach (var rb in rbs)
         {
             rb.isKinematic = false;
-            rb.linearVelocity = -impact / rbs.Length;
-            rb.angularVelocity = Vector3.zero;
+            rb.linearVelocity = -impulse / rbs.Length;
+            rb.linearVelocity = Vector3.zero;
+
         }
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        Ragdoll(collision.impulse);
+        if (collision.gameObject.layer != LayerMask.NameToLayer("Ground"))
+        {
+            Ragdoll(collision.impulse);
+        }
     }
 }
