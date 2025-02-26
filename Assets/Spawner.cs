@@ -6,7 +6,8 @@ public class Spawner : MonoBehaviour
     public GameObject ball;
     private GameObject _ballSpawnGraphic;
     public AnimationCurve spawnGraphicCurve;
-    private float _ballVisualScale;
+    private float _ballVisualScaleDefault;
+    private float _ballVisualScale => spawnGraphicCurve.Evaluate(Mathf.InverseLerp(0, rate, _cooldown)) * _ballVisualScaleDefault;
     
 
     private float _cooldown;
@@ -14,7 +15,9 @@ public class Spawner : MonoBehaviour
     {
         _cooldown = 0f;
         _ballSpawnGraphic = Instantiate(ball, transform);
+        _ballVisualScaleDefault = _ballSpawnGraphic.transform.localScale.x;
         Destroy(_ballSpawnGraphic.GetComponent<Rigidbody>());
+        Destroy(_ballSpawnGraphic.GetComponent<SphereCollider>());
         //_ballSpawnGraphic.transform.localScale = Vector3.zero;
     }
 
@@ -25,6 +28,10 @@ public class Spawner : MonoBehaviour
             Spawn();
             
         }
+
+        print(_ballVisualScale);
+        Vector3 scale = new Vector3(_ballVisualScale, _ballVisualScale, _ballVisualScale);
+        _ballSpawnGraphic.transform.localScale = scale;
 
         _cooldown += Time.deltaTime;
     }
