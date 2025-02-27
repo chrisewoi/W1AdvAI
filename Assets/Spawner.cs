@@ -29,7 +29,7 @@ public class Spawner : MonoBehaviour
             
         }
 
-        print(_ballVisualScale);
+        //print(_ballVisualScale);
         Vector3 scale = new Vector3(_ballVisualScale, _ballVisualScale, _ballVisualScale);
         _ballSpawnGraphic.transform.localScale = scale;
 
